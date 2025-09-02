@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: Backend Users Service API
+  version: 1.0.0
+servers:
+  - url: /api
+paths:
+  /ping:
+    get:
+      summary: Проверка доступности сервера
+      responses:
+        '200':
+          description: Сервер доступен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: pong
+
+  /users/:
+    get:
+      summary: Получить список пользователей
+      parameters:
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Создать пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveUserRequest'
+      responses:
+        '200':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        '400':
+          $ref: '#/components/responses/Error'
+
+  /users/{tgID}:
+    get:
+      summary: Получить пользователя по Telegram ID
+      parameters:
+        - name: tgID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Обновить пользователя
+      parameters:
+        - name: tgID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Пользователь обновлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        '400':
+          $ref: '#/components/responses/Error'
+    delete:
+      summary: Удалить пользователя (только админ)
+      parameters:
+        - name: tgID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fromUserID
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Пользователь удален
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        '403':
+          $ref: '#/components/responses/Error'
+        '400':
+          $ref: '#/components/responses/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        tgID:
+          type: string
+        role:
+          type: string
+        name:
+          type: string
+        language:
+          type: string
+    SaveUserRequest:
+      type: object
+      properties:
+        tgID:
+          type: string
+        language:
+          type: string
+      required:
+        - tgID
+        - language
+  responses:
+    Error:
+      description: Ошибка запроса
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+              message:
+                type: string
